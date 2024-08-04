@@ -13,6 +13,7 @@ import java.util.UUID;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "products")
 public class Product {
 
     @Id
@@ -22,12 +23,10 @@ public class Product {
     private String name;
     private String description;
     private BigDecimal price;
-
-    // Uncomment if you plan to use images in the future
-    // @Lob
-    // private byte[] image;
-
     private Integer quantityInStock;
+
+    @Lob
+    private byte[] image;
 
     @Enumerated(EnumType.STRING)
     private ProductStatus status;
