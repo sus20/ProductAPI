@@ -7,10 +7,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("enums")
+@RequestMapping("/")
 public class EnumController {
 
-    @GetMapping("/product-status")
+    @GetMapping("product-status")
     public ProductStatus[] getProductStatus(){
         return ProductStatus.values();
     }
