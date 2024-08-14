@@ -32,17 +32,13 @@ public class ProductService {
                 .orElseThrow(() -> new IllegalArgumentException("Product with ID " + id + " does not exist."));
     }
 
-    public Product updateProduct(UUID id, Product productDetails, MultipartFile imageFile) throws IOException {
+    public Product updateProduct(UUID id, Product updatedProduct, MultipartFile imageFile) throws IOException {
         Product product = productRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Product with ID " + id + "does not exits."));
-        product.setName(productDetails.getName());
-        product.setDescription(productDetails.getDescription());
-        product.setPrice(productDetails.getPrice());
-        product.setQuantityInStock(productDetails.getQuantityInStock());
-        product.setStatus(productDetails.getStatus());
+        updatedProduct.setId(product.getId());
         if (imageFile != null && !imageFile.isEmpty()) {
-            product.setImage(imageFile.getBytes());
+            updatedProduct.setImage(imageFile.getBytes());
         }
-        return productRepository.save(product);
+        return productRepository.save(updatedProduct);
     }
 
     public void deleteProduct(UUID id) {
