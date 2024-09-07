@@ -19,8 +19,10 @@ public class ProductPersistenceImpl implements IProductOutputPersistencePort {
 
     @Override
     public Product save(Product product) {
-        ProductEntity productEntity = productRepository.save(getProductEntity(product));
-        return getProduct(productEntity);
+        ProductEntity productEntity = getProductEntity(product);
+        productEntity.generateID();
+        ProductEntity savedProductEntity = productRepository.save(productEntity);
+        return getProduct(savedProductEntity);
     }
 
     @Override
@@ -40,11 +42,11 @@ public class ProductPersistenceImpl implements IProductOutputPersistencePort {
 
     }
 
-    private  Product getProduct(ProductEntity productEntity){
+    private Product getProduct(ProductEntity productEntity) {
         return EntityMapper.INSTANCE.mapToProduct(productEntity);
     }
 
-    private ProductEntity getProductEntity(Product product){
+    private ProductEntity getProductEntity(Product product) {
         return EntityMapper.INSTANCE.mapToProductEntity(product);
     }
 
