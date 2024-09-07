@@ -71,7 +71,7 @@ public class ProductService implements IProductInputPort {
         ObjectMapper objectMapper = new ObjectMapper();
         Customer customer;
         try {
-            customer = objectMapper.readValue(event.getData().sctoBytes(), Customer.class);
+            customer = objectMapper.readValue(event.getData().toBytes(), Customer.class);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
