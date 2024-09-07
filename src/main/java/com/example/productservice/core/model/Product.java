@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -19,14 +18,11 @@ public class Product {
     private Integer quantityInStock;
     private byte[] image;
     private ProductStatus status;
+    private String customerId;
 
     public enum ProductStatus {
         AVAILABLE,
         OUT_OF_STOCK,
         DISCONTINUED
-    }
-
-    public void generateID(){
-        this.id = String.valueOf(UUID.randomUUID());
     }
 }
