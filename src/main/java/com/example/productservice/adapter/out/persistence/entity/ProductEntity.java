@@ -19,7 +19,7 @@ import java.util.UUID;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ProductEntity {
 
-    @Id()
+    @Id
     private String id;
 
     private String name;
