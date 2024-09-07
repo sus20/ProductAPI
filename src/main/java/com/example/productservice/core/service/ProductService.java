@@ -1,10 +1,14 @@
 package com.example.productservice.core.service;
 
-import com.example.productservice.core.exception.ProductCreationException;
+import com.example.productservice.core.exception.ImageProcessingException;
+import com.example.productservice.core.exception.InvalidImageFileException;
 import com.example.productservice.core.exception.ProductNotFoundException;
+import com.example.productservice.core.model.Customer;
 import com.example.productservice.core.model.Product;
 import com.example.productservice.core.port.input.IProductInputPort;
 import com.example.productservice.core.port.output.IProductOutputPersistencePort;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.cloudevents.CloudEvent;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -22,7 +26,6 @@ public class ProductService implements IProductInputPort {
     public Product saveProduct(Product product, MultipartFile imageFile) {
         validateImageFile(imageFile);
         product.setImage(convertImageFileToBytes(imageFile));
-        product.generateID();
         return iProductOutputPersistencePort.save(product);
     }
 
@@ -31,12 +34,11 @@ public class ProductService implements IProductInputPort {
     }
 
     public Product getProductById(String id) {
-        return iProductOutputPersistencePort.findById(id)
-                .orElseThrow(() -> new ProductNotFoundException(id));
+        return findProductById(id);
     }
 
     public Product updateProduct(String id, Product updatedProduct, MultipartFile imageFile) throws IOException {
-        Product product = iProductOutputPersistencePort.findById(id).orElseThrow(() -> new ProductNotFoundException(id));
+        Product product = findProductById(id);
         updatedProduct.setId(product.getId());
         validateImageFile(imageFile);
         return iProductOutputPersistencePort.save(updatedProduct);
@@ -48,7 +50,7 @@ public class ProductService implements IProductInputPort {
 
     private void validateImageFile(MultipartFile imageFile) {
         if (ObjectUtils.isEmpty(imageFile) || imageFile.isEmpty()) {
-            throw new ProductCreationException("Image file is null or empty");
+            throw new InvalidImageFileException("Image file is null or empty");
         }
     }
 
@@ -56,7 +58,24 @@ public class ProductService implements IProductInputPort {
         try {
             return imageFile.getBytes();
         } catch (IOException e) {
-            throw new ProductCreationException("Failed to process image file", e);
+            throw new ImageProcessingException("Failed to process image file", e);
         }
+    }
+
+    private Product findProductById(String id) {
+        return iProductOutputPersistencePort.findById(id)
+                .orElseThrow(() -> new ProductNotFoundException(id));
+    }
+
+    public void handleCustomerCreated(CloudEvent event) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        Customer customer;
+        try {
+            customer = objectMapper.readValue(event.getData().sctoBytes(), Customer.class);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        System.out.println(customer.getFirstName());
     }
 }
