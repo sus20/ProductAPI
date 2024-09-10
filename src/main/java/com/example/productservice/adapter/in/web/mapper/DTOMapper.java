@@ -11,5 +11,4 @@ public interface DTOMapper {
 
     Product mapToProduct (ProductDTO productDTO);
     ProductDTO mapToProductDTO (Product product);
-
 }
