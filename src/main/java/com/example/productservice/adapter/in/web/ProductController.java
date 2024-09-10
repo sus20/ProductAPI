@@ -4,10 +4,12 @@ import com.example.productservice.adapter.in.web.dto.ProductDTO;
 import com.example.productservice.adapter.in.web.mapper.DTOMapper;
 import com.example.productservice.core.model.Product;
 import com.example.productservice.core.port.input.IProductInputPort;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.ObjectUtils;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -17,6 +19,7 @@ import java.util.List;
 
 @RestController
 @AllArgsConstructor
+@Validated
 @RequestMapping("/products/{customerId}")
 public class ProductController {
 
@@ -24,7 +27,7 @@ public class ProductController {
 
     @PostMapping
     public ResponseEntity<?> createProduct(@PathVariable String customerId,
-                                           @RequestPart ProductDTO productDTO,
+                                           @RequestPart @Valid ProductDTO productDTO,
                                            @RequestPart MultipartFile image) throws IOException {
         Product savedProduct = productInputPort.saveProduct(customerId, getProduct(productDTO), image);
         return new ResponseEntity<>(getProductDTO(savedProduct), HttpStatus.CREATED);
@@ -49,7 +52,7 @@ public class ProductController {
     @PutMapping("/{productId}")
     public ResponseEntity<?> updateProduct(@PathVariable String customerId,
                                            @PathVariable String productId,
-                                           @RequestPart ProductDTO productDTO,
+                                           @RequestPart @Valid ProductDTO productDTO,
                                            @RequestParam(value = "image", required = false) MultipartFile imageFile) throws IOException {
             Product updatedProduct = productInputPort.updateProduct(customerId, productId, DTOMapper.INSTANCE.mapToProduct(productDTO), imageFile);
             return ResponseEntity.ok(getProductDTO(updatedProduct));
