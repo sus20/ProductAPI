@@ -34,13 +34,11 @@ public class ProductDTO {
     @Min(value = 0, message = "{Min.quantityInStock}")
     private Integer quantityInStock;
 
-    @NotNull(message = "{NotNull.image}")
     private byte[] image;
 
     @NotNull(message = "{NotNull.status}")
     private ProductStatus status;
 
-    @NotBlank(message = "{NotBlank.customerId}")
     private String customerId;
 
     public enum ProductStatus {
