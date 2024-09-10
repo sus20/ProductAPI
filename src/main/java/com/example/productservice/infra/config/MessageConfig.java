@@ -20,5 +20,3 @@ public class MessageConfig implements WebMvcConfigurer {
         return msgSource;
     }
 }
-
-
