@@ -40,6 +40,9 @@ public class ProductDTO {
     @NotNull(message = "{NotNull.status}")
     private ProductStatus status;
 
+    @NotBlank(message = "{NotBlank.customerId}")
+    private String customerId;
+
     public enum ProductStatus {
         AVAILABLE,
         OUT_OF_STOCK,
