@@ -15,7 +15,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "products")
-@TypeAlias("com.example.productservice.adapter.out.persistence.entity.ProductEntity")
+@TypeAlias("com.example.product-service.adapter.out.persistence.entity.ProductEntity")
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ProductEntity {
 
@@ -26,9 +26,9 @@ public class ProductEntity {
     private String description;
     private BigDecimal price;
     private Integer quantityInStock;
-
     @Lob
     private byte[] image;
+    private String customerId;
 
     @Enumerated(EnumType.STRING)
     private com.example.productservice.core.model.Product.ProductStatus status;
