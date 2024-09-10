@@ -17,52 +17,56 @@ import java.util.List;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/products")
+@RequestMapping("/products/{customerId}")
 public class ProductController {
 
     private final IProductInputPort productInputPort;
 
     @PostMapping
-    public ResponseEntity<?> createProduct(@RequestPart ProductDTO productDTO,
+    public ResponseEntity<?> createProduct(@PathVariable String customerId,
+                                           @RequestPart ProductDTO productDTO,
                                            @RequestPart MultipartFile image) throws IOException {
-            Product savedProduct = productInputPort.saveProduct(DTOMapper.INSTANCE.mapToProduct(productDTO), image);
-            return new ResponseEntity<>(DTOMapper.INSTANCE.mapToProductDTO(savedProduct), HttpStatus.CREATED);
+        Product savedProduct = productInputPort.saveProduct(customerId, getProduct(productDTO), image);
+        return new ResponseEntity<>(getProductDTO(savedProduct), HttpStatus.CREATED);
     }
 
     @GetMapping
-    public ResponseEntity<List<ProductDTO>> getAllProducts() {
-        List<ProductDTO> productsDTOList = productInputPort.getAllProducts().stream().map(DTOMapper.INSTANCE::mapToProductDTO).toList();
+    public ResponseEntity<List<ProductDTO>> getAllProducts(@PathVariable String customerId) {
+        List<ProductDTO> productsDTOList = productInputPort.getAllProducts(customerId).stream().map(DTOMapper.INSTANCE::mapToProductDTO).toList();
         return new ResponseEntity<>(productsDTOList, HttpStatus.OK);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ProductDTO> getProduct(@PathVariable String id) {
-        Product product = productInputPort.getProductById(id);
+    @GetMapping("/{productId}")
+    public ResponseEntity<ProductDTO> getProduct(@PathVariable String customerId,
+                                                 @PathVariable String productId) {
+        Product product = productInputPort.getProductById(customerId, productId);
 
         return ObjectUtils.isEmpty(product) ?
-                                            new ResponseEntity<>(HttpStatus.NOT_FOUND) :
-                                            new ResponseEntity<>(DTOMapper.INSTANCE.mapToProductDTO(product), HttpStatus.OK);
+                new ResponseEntity<>(HttpStatus.NOT_FOUND) :
+                new ResponseEntity<>(getProductDTO(product), HttpStatus.OK);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateProduct(
-            @PathVariable String id,
-            @RequestPart ProductDTO productDTO,
-            @RequestParam(value = "image", required = false) MultipartFile imageFile) {
-
-        try {
-            Product updatedProduct = productInputPort.updateProduct(id, DTOMapper.INSTANCE.mapToProduct(productDTO), imageFile);
-            return ResponseEntity.ok(DTOMapper.INSTANCE.mapToProductDTO(updatedProduct));
-        } catch (IOException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    @PutMapping("/{productId}")
+    public ResponseEntity<?> updateProduct(@PathVariable String customerId,
+                                           @PathVariable String productId,
+                                           @RequestPart ProductDTO productDTO,
+                                           @RequestParam(value = "image", required = false) MultipartFile imageFile) throws IOException {
+            Product updatedProduct = productInputPort.updateProduct(customerId, productId, DTOMapper.INSTANCE.mapToProduct(productDTO), imageFile);
+            return ResponseEntity.ok(getProductDTO(updatedProduct));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProduct(@PathVariable String id) {
-        productInputPort.deleteProduct(id);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    @DeleteMapping("/{productId}")
+    public ResponseEntity<Void> deleteProduct(@PathVariable String customerId,
+                                              @PathVariable String productId) {
+        productInputPort.deleteProduct(customerId, productId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    private static ProductDTO getProductDTO(Product savedProduct) {
+        return DTOMapper.INSTANCE.mapToProductDTO(savedProduct);
+    }
+
+    private static Product getProduct(ProductDTO productDTO) {
+        return DTOMapper.INSTANCE.mapToProduct(productDTO);
     }
 }
