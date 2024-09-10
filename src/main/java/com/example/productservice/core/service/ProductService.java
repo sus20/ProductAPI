@@ -1,14 +1,13 @@
 package com.example.productservice.core.service;
 
+import com.example.productservice.core.exception.CustomerIdNotFoundException;
 import com.example.productservice.core.exception.ImageProcessingException;
 import com.example.productservice.core.exception.InvalidImageFileException;
 import com.example.productservice.core.exception.ProductNotFoundException;
-import com.example.productservice.core.model.Customer;
 import com.example.productservice.core.model.Product;
 import com.example.productservice.core.port.input.IProductInputPort;
+import com.example.productservice.core.port.output.ICustomerEventOutputPort;
 import com.example.productservice.core.port.output.IProductOutputPersistencePort;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.cloudevents.CloudEvent;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -22,30 +21,40 @@ import java.util.List;
 public class ProductService implements IProductInputPort {
 
     private final IProductOutputPersistencePort iProductOutputPersistencePort;
+    private final ICustomerEventOutputPort iCustomerEventOutputPort;
 
-    public Product saveProduct(Product product, MultipartFile imageFile) {
+    @Override
+    public Product saveProduct(String customerId, Product product, MultipartFile imageFile) {
+        validateCustomerExist(customerId);
         validateImageFile(imageFile);
+
+        product.setCustomerId(customerId);
         product.setImage(convertImageFileToBytes(imageFile));
         return iProductOutputPersistencePort.save(product);
     }
 
-    public List<Product> getAllProducts() {
+    public List<Product> getAllProducts(String customerId) {
+        validateCustomerExist(customerId);
         return iProductOutputPersistencePort.findAll();
     }
 
-    public Product getProductById(String id) {
-        return findProductById(id);
+    public Product getProductById(String customerId, String productId) {
+        validateCustomerExist(customerId);
+        return findProductById(productId);
     }
 
-    public Product updateProduct(String id, Product updatedProduct, MultipartFile imageFile) throws IOException {
-        Product product = findProductById(id);
-        updatedProduct.setId(product.getId());
+    public Product updateProduct(String customerId, String productId, Product updatedProduct, MultipartFile imageFile) {
+        validateCustomerExist(customerId);
         validateImageFile(imageFile);
+
+        Product product = findProductById(productId);
+        updatedProduct.setId(product.getId());
         return iProductOutputPersistencePort.save(updatedProduct);
     }
 
-    public void deleteProduct(String id) {
-        iProductOutputPersistencePort.deleteById(id);
+    public void deleteProduct(String customerId, String productId) {
+        validateCustomerExist(customerId);
+        iProductOutputPersistencePort.deleteById(productId);
     }
 
     private void validateImageFile(MultipartFile imageFile) {
@@ -67,15 +76,7 @@ public class ProductService implements IProductInputPort {
                 .orElseThrow(() -> new ProductNotFoundException(id));
     }
 
-    public void handleCustomerCreated(CloudEvent event) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        Customer customer;
-        try {
-            customer = objectMapper.readValue(event.getData().toBytes(), Customer.class);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        System.out.println(customer.getFirstName());
+    private void validateCustomerExist(String customerId){
+        iCustomerEventOutputPort.findById(customerId).orElseThrow(() -> new CustomerIdNotFoundException(customerId));
     }
 }
